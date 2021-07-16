@@ -1,43 +1,31 @@
-import { Component } from 'react';
 import { FiEdit3, FiTrash } from 'react-icons/fi';
-
+import { Food } from '../../types';
 import { Container } from './styles';
 import api from '../../services/api';
+import { useState } from 'react';
+import { useFoods } from '../../hooks/useFoods';
 
-class Food extends Component {
-  constructor(props) {
-    super(props);
+interface FoodProps{
+  food: Food;
+  handleDelete:(id: number)=>void;
+  handleEditFood:(food :Food)=> void;
+}
+export function FoodComponent (props : FoodProps){
+  const [ food, setFood ] = useState<Food>(props.food);
+  const {changeAvailability} = useFoods();
 
-    const { available } = this.props.food;
-    this.state = {
-      isAvailable: available
-    };
+ async function toggleAvailable(){
+    changeAvailability(food);
+    setFood({...food, available: !food.available});
   }
 
-  toggleAvailable = async () => {
-    const { food } = this.props;
-    const { isAvailable } = this.state;
-
-    await api.put(`/foods/${food.id}`, {
-      ...food,
-      available: !isAvailable,
-    });
-
-    this.setState({ isAvailable: !isAvailable });
-  }
-
-  setEditingFood = () => {
-    const { food, handleEditFood } = this.props;
-
+  function setEditingFood() {
+    const { food, handleEditFood } = props;
     handleEditFood(food);
   }
 
-  render() {
-    const { isAvailable } = this.state;
-    const { food, handleDelete } = this.props;
-
-    return (
-      <Container available={isAvailable}>
+return(
+<Container available={food.available}>
         <header>
           <img src={food.image} alt={food.name} />
         </header>
@@ -53,7 +41,7 @@ class Food extends Component {
             <button
               type="button"
               className="icon"
-              onClick={this.setEditingFood}
+              onClick={setEditingFood}
               data-testid={`edit-food-${food.id}`}
             >
               <FiEdit3 size={20} />
@@ -62,7 +50,7 @@ class Food extends Component {
             <button
               type="button"
               className="icon"
-              onClick={() => handleDelete(food.id)}
+              onClick={() => props.handleDelete(food.id)}
               data-testid={`remove-food-${food.id}`}
             >
               <FiTrash size={20} />
@@ -70,23 +58,42 @@ class Food extends Component {
           </div>
 
           <div className="availability-container">
-            <p>{isAvailable ? 'Disponível' : 'Indisponível'}</p>
+            <p>{food.available ? 'Disponível' : 'Indisponível'}</p>
 
             <label htmlFor={`available-switch-${food.id}`} className="switch">
               <input
                 id={`available-switch-${food.id}`}
                 type="checkbox"
-                checked={isAvailable}
-                onChange={this.toggleAvailable}
+                checked={food.available}
+                onChange={toggleAvailable}
                 data-testid={`change-status-food-${food.id}`}
               />
               <span className="slider" />
             </label>
           </div>
         </section>
-      </Container>
-    );
-  }
-};
+      </Container>)
+}
+// class Food extends Component {
+//   constructor(props) {
+//     super(props);
 
-export default Food;
+//     const { available } = this.props.food;
+//     this.state = {
+//       isAvailable: available
+//     };
+//   }
+
+ 
+
+//   render() {
+//     const { isAvailable } = this.state;
+//     const { food, handleDelete } = this.props;
+
+//     return (
+      
+//     );
+//   }
+// };
+
+// export default Food;
